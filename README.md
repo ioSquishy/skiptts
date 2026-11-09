@@ -1,3 +1,6 @@
+# Dependencies
+- espeak-ng
+
 # Dataset
 ## Original Schema
  - openaccessinfo:
