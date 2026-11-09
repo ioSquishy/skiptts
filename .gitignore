@@ -13,3 +13,4 @@ wheels/
 
 # Large files
 s2orc_shards*
+processed_dataset*

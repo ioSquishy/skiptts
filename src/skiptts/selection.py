@@ -3,11 +3,16 @@
 import gzip
 import json
 import spacy
+import glob
+import os
+from multiprocessing import Pool
 
 nlp = spacy.blank("en")
 
-def process_shard(input_file_path, output_file_path):
-    # words, label 1=citation 0=body
+def process_shard(input_file_path, output_file_path=None):
+    if output_file_path is None:
+        new_name = os.path.basename(input_file_path).replace("s2orc_v2_", "").replace(".gz", ".jsonl")
+        output_file_path = f"processed_dataset/processed_{new_name}"
 
     with gzip.open(input_file_path, 'rt', encoding='utf-8') as infile , \
         open(output_file_path, 'a', encoding='utf-8') as outfile:
@@ -39,6 +44,7 @@ def process_shard(input_file_path, output_file_path):
                 is_citation_char[start_idx:end_idx] = [True] * (end_idx-start_idx)
 
             # Tokenize with blank spacy nlp object to separate by space and punctuation
+            # https://spacy.io/usage/processing-pipelines
             doc = nlp(body_text)
             tokens = []
             labels = []
@@ -59,3 +65,25 @@ def process_shard(input_file_path, output_file_path):
                 "labels": labels
             }
             outfile.write(json.dumps(datapoint) + "\n")
+
+def process_shards():
+    shards = glob.glob("s2orc_shards-2026-10-27/*.gz")
+    shards.sort()
+
+    with Pool(processes=8) as pool:
+        pool.map(process_shard, shards)
+
+
+def count_datapoints(path):
+    count = 0
+    with open(path, 'rt', encoding='utf-8') as file:
+        for doc in file:
+            count += 1
+    return count
+
+def count_total_processed_datapoints():
+    total_count = 0
+    pshards = glob.glob("processed_dataset/*.jsonl")
+    for shard in pshards:
+        total_count += count_datapoints(shard)
+    return total_count
