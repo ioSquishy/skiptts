@@ -6,16 +6,17 @@ import spacy
 import glob
 import os
 from multiprocessing import Pool
+import random
 
 nlp = spacy.blank("en")
 
 def process_shard(input_file_path, output_file_path=None):
     if output_file_path is None:
         new_name = os.path.basename(input_file_path).replace("s2orc_v2_", "").replace(".gz", ".jsonl")
-        output_file_path = f"processed_dataset/processed_{new_name}"
+        output_file_path = f"processed_shards/processed_{new_name}"
 
     with gzip.open(input_file_path, 'rt', encoding='utf-8') as infile , \
-        open(output_file_path, 'a', encoding='utf-8') as outfile:
+        open(output_file_path, 'wt', encoding='utf-8') as outfile:
 
         for document in infile:
             paper = json.loads(document)
@@ -66,13 +67,12 @@ def process_shard(input_file_path, output_file_path=None):
             }
             outfile.write(json.dumps(datapoint) + "\n")
 
-def process_shards():
-    shards = glob.glob("s2orc_shards-2026-10-27/*.gz")
-    shards.sort()
+def process_shards(num_processes, shard_paths=[]):
+    if len(shard_paths) is 0:
+        shard_paths = glob.glob("s2orc_shards-2026-10-27/*.gz")
 
-    with Pool(processes=8) as pool:
-        pool.map(process_shard, shards)
-
+    with Pool(num_processes) as pool:
+        pool.map(process_shard, shard_paths)
 
 def count_datapoints(path):
     count = 0
@@ -83,7 +83,21 @@ def count_datapoints(path):
 
 def count_total_processed_datapoints():
     total_count = 0
-    pshards = glob.glob("processed_dataset/*.jsonl")
+    pshards = glob.glob("processed_shards/*.jsonl")
     for shard in pshards:
         total_count += count_datapoints(shard)
     return total_count
+
+def split_processed_shards():
+    pshards = glob.glob("processed_shards/*.jsonl")
+
+    with open("dataset/train.jsonl", mode='wt', encoding='utf-8') as trainfile, \
+        open("dataset/val.jsonl", mode='wt', encoding='utf-8') as valfile:
+
+        for shard in pshards:
+            with open(shard, mode='rt', encoding='utf-8') as shardfile:
+                for datapoint in shardfile:
+                    if random.random() < 0.80:
+                        trainfile.write(datapoint)
+                    else:
+                        valfile.write(datapoint)
