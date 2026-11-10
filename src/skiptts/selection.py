@@ -57,9 +57,9 @@ def process_shard(input_file_path, output_file_path=None):
 
                 tokens.append(token.text)
                 if is_citation_char[token.idx]:
-                    labels.append(0)
-                else:
                     labels.append(1)
+                else:
+                    labels.append(0)
 
             datapoint = {
                 "tokens": tokens,
@@ -68,7 +68,7 @@ def process_shard(input_file_path, output_file_path=None):
             outfile.write(json.dumps(datapoint) + "\n")
 
 def process_shards(num_processes, shard_paths=[]):
-    if len(shard_paths) is 0:
+    if len(shard_paths) == 0:
         shard_paths = glob.glob("s2orc_shards-2026-10-27/*.gz")
 
     with Pool(num_processes) as pool:
@@ -101,3 +101,16 @@ def split_processed_shards():
                         trainfile.write(datapoint)
                     else:
                         valfile.write(datapoint)
+
+
+def create_subset(dataset_path, subset_path, rows):
+    with open(dataset_path, mode='r', encoding='utf-8') as superset, \
+        open(subset_path, mode='wt', encoding='utf-8') as subset:
+
+        count = 0
+        for row in superset:
+            if count >= rows:
+                return
+
+            subset.write(row)
+            count += 1

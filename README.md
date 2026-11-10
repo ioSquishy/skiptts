@@ -18,8 +18,14 @@
    - text: Full body text as a single string
    - annotations: Annotated spans of the full body text
 
+## Derived Schema
+- tokens: [str]
+- labels: [1|0]
+  - 1 = citation
+  - 0 = not citation
+
 ## Usage Policy
-This collection is licensed under ODC-BY. (https://opendatacommons.org/licenses/by/1.0/)
+Contains information from S2ORC_v2 which is made available under the [ODC Attribution License](https://opendatacommons.org/licenses/by/1.0/).
 
 # Citations
 ## Dataset
