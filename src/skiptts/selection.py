@@ -2,13 +2,12 @@
 
 import gzip
 import json
-import spacy
 import glob
 import os
 from multiprocessing import Pool
 import random
 
-nlp = spacy.blank("en")
+buffer_size = 2 * 1024 * 1024
 
 def process_shard(input_file_path, output_file_path=None):
     if output_file_path is None:
@@ -16,7 +15,7 @@ def process_shard(input_file_path, output_file_path=None):
         output_file_path = f"processed_shards/processed_{new_name}"
 
     with gzip.open(input_file_path, 'rt', encoding='utf-8') as infile , \
-        open(output_file_path, 'wt', encoding='utf-8') as outfile:
+        open(output_file_path, 'wt', encoding='utf-8', buffering=buffer_size) as outfile:
 
         for document in infile:
             paper = json.loads(document)
@@ -36,34 +35,17 @@ def process_shard(input_file_path, output_file_path=None):
             citation_char_count = 0
 
             # Boolean mask of document
-            is_citation_char = [False] * len(body_text)
+            is_citation_char = [0] * len(body_text)
 
             # Mark citations in mask as True
             for citation in body_citations:
                 start_idx = citation.get('start', 0)
                 end_idx = citation.get('end', 0)
-                is_citation_char[start_idx:end_idx] = [True] * (end_idx-start_idx)
-
-            # Tokenize with blank spacy nlp object to separate by space and punctuation
-            # https://spacy.io/usage/processing-pipelines
-            doc = nlp(body_text)
-            tokens = []
-            labels = []
-
-            for token in doc:
-                # Skip whitespace
-                if not token.text.strip():
-                    continue
-
-                tokens.append(token.text)
-                if is_citation_char[token.idx]:
-                    labels.append(1)
-                else:
-                    labels.append(0)
+                is_citation_char[start_idx:end_idx] = [1] * (end_idx-start_idx)
 
             datapoint = {
-                "tokens": tokens,
-                "labels": labels
+                "text": body_text,
+                "is_citation": is_citation_char
             }
             outfile.write(json.dumps(datapoint) + "\n")
 
@@ -89,23 +71,27 @@ def count_total_processed_datapoints():
     return total_count
 
 def split_processed_shards():
+    """80/10/10 train/val/test split"""
     pshards = glob.glob("processed_shards/*.jsonl")
 
-    with open("dataset/train.jsonl", mode='wt', encoding='utf-8') as trainfile, \
-        open("dataset/val.jsonl", mode='wt', encoding='utf-8') as valfile:
+    with open("dataset/train.jsonl", mode='wt', encoding='utf-8', buffering=buffer_size) as trainfile, \
+        open("dataset/val.jsonl", mode='wt', encoding='utf-8', buffering=buffer_size) as valfile, \
+        open("dataset/test.jsonl", mode='wt', encoding='utf-8', buffering=buffer_size) as testfile:
 
         for shard in pshards:
-            with open(shard, mode='rt', encoding='utf-8') as shardfile:
+            with open(shard, mode='rt', encoding='utf-8', buffering=buffer_size) as shardfile:
                 for datapoint in shardfile:
                     if random.random() < 0.80:
                         trainfile.write(datapoint)
                     else:
-                        valfile.write(datapoint)
-
+                        if random.random() < 0.5:
+                            valfile.write(datapoint)
+                        else:
+                            testfile.write(datapoint)
 
 def create_subset(dataset_path, subset_path, rows):
-    with open(dataset_path, mode='r', encoding='utf-8') as superset, \
-        open(subset_path, mode='wt', encoding='utf-8') as subset:
+    with open(dataset_path, mode='r', encoding='utf-8', buffering=buffer_size) as superset, \
+        open(subset_path, mode='wt', encoding='utf-8', buffering=buffer_size) as subset:
 
         count = 0
         for row in superset:

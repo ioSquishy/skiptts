@@ -1,9 +1,6 @@
 # from .download_s2orc import download_all_s2orc_shards
 # from .pymupdf_poc import parse_and_read
 from .selection import *
-import glob
-from multiprocessing import Pool
-import gzip
 
 def main() -> None:
     # download_all_s2orc_shards()
@@ -25,7 +22,9 @@ def main() -> None:
     # process_shards(8, shard_paths=paths)
     # print(count_total_processed_datapoints())
 
-    # split_processed_shards()
+    split_processed_shards()
 
-    create_subset("dataset/train.jsonl", "dataset/train-100.jsonl", 100)
-    create_subset("dataset/val.jsonl", "dataset/val-100.jsonl", 100)
+    # create_subset("processed_shards/processed_shard_000.jsonl", "temp.jsonl", 2)
+
+    # create_subset("dataset/train.jsonl", "dataset/train-100.jsonl", 100)
+    # create_subset("dataset/val.jsonl", "dataset/val-100.jsonl", 100)
