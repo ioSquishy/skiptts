@@ -19,8 +19,8 @@
    - annotations: Annotated spans of the full body text
 
 ## Derived Schema
-- tokens: array of blank spacy tokenized text from body.text
-- labels: corresponding array of 1 or 0 with 1 meaning the token is part of a citation
+- tokens: text string from body.text
+- is_citation: corresponding array of 1 or 0 with 1 meaning the token is part of a citation
 
 ## Usage Policy
 Contains information from [S2ORC](https://github.com/allenai/s2orc) which is made available under the [ODC Attribution License](https://opendatacommons.org/licenses/by/1.0/).

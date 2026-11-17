@@ -13,5 +13,7 @@ wheels/
 
 # Large files
 s2orc_shards*
-processed_shards*
-dataset*
+processed_shards
+dataset
+inline-citation-mask
+model
