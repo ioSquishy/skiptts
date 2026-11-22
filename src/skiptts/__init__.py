@@ -1,10 +1,10 @@
 # from .download_s2orc import download_all_s2orc_shards
 import os
-from .selection import create_dataset
+from .selection import create_hf_dataset
 from datasets import DatasetDict
 
 if os.path.isdir("inline-citation-mask") == False:
-    create_dataset([
+    create_hf_dataset([
         "s2orc_shards-2026-10-27/s2orc_v2_shard_000.gz",
         "s2orc_shards-2026-10-27/s2orc_v2_shard_047.gz",
         "s2orc_shards-2026-10-27/s2orc_v2_shard_094.gz",
