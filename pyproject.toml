@@ -14,8 +14,10 @@ dependencies = [
     "pymupdf>=2.1",
     "python-dotenv>=1.2.4",
     "requests>=2.34.2",
+    "scikit-learn>=1.9.1",
     "sounddevice>=0.5.6",
     "spacy>=3.8.18",
+    "transformers>=5.22.2",
 ]
 
 [project.scripts]
