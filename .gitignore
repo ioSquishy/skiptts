@@ -16,4 +16,6 @@ s2orc_shards*
 processed_shards
 dataset
 inline-citation-mask
-model
+models
+checkpoints
+examples

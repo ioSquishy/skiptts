@@ -1,7 +1,8 @@
 from transformers import AutoTokenizer, DataCollatorForTokenClassification
 
-MODEL_CHECKPOINT = "distilbert/distilroberta-base"
+MODEL_CHECKPOINT = "jhu-clsp/ettin-encoder-32m"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_CHECKPOINT)
+data_collator = DataCollatorForTokenClassification(tokenizer=tokenizer)
 
 def tokenize_and_align_labels(examples):
     tokenized_inputs = tokenizer(
@@ -29,6 +30,3 @@ def tokenize_and_align_labels(examples):
     tokenized_inputs["labels"] = labels
     tokenized_inputs.pop("offset_mapping")
     return tokenized_inputs
-
-def get_data_collator() -> DataCollatorForTokenClassification:
-    return DataCollatorForTokenClassification(tokenizer=tokenizer)

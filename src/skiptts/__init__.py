@@ -1,6 +1,8 @@
 # from .download_s2orc import download_all_s2orc_shards
 import os
 from .selection import create_hf_dataset
+from .training import train
+
 from datasets import DatasetDict
 
 if os.path.isdir("inline-citation-mask") == False:
@@ -18,4 +20,4 @@ if os.path.isdir("inline-citation-mask") == False:
 dataset = DatasetDict.load_from_disk("inline-citation-mask")
     
 def main() -> None:
-    print("Running")
+    train(dataset=dataset)
