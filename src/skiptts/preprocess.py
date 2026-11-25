@@ -1,6 +1,6 @@
 from transformers import AutoTokenizer, DataCollatorForTokenClassification
+from .config import MODEL_CHECKPOINT
 
-MODEL_CHECKPOINT = "jhu-clsp/ettin-encoder-32m"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_CHECKPOINT)
 data_collator = DataCollatorForTokenClassification(tokenizer=tokenizer)
 

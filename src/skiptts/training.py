@@ -2,14 +2,8 @@ import numpy as np
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from transformers import AutoModelForTokenClassification, TrainingArguments, Trainer
 
-from .preprocess import MODEL_CHECKPOINT, tokenize_and_align_labels, data_collator, tokenizer
-
-OUTPUT_DIR_PREFIX = "ettin-32" # distilroberta
-TRAIN_ROWS = 1_024_000
-TRAINING_BATCH_SIZE = 32
-VAL_ROWS = 10_000
-MAX_STEPS = (int)(TRAIN_ROWS / TRAINING_BATCH_SIZE)
-EVAL_SAVE_STEPS = 4000
+from .preprocess import tokenize_and_align_labels, data_collator, tokenizer
+from .config import *
 
 id2label = {1: "CITATION", 0: "BODY"}
 label2id = {"CITATION": 1, "BODY": 0}
@@ -27,7 +21,6 @@ training_args = TrainingArguments(
     learning_rate=2e-5,
     weight_decay=0.01,
     warmup_steps=1000,
-    max_steps=MAX_STEPS,
 
     # Batching & GPU performance
     per_device_train_batch_size=TRAINING_BATCH_SIZE,
@@ -36,22 +29,23 @@ training_args = TrainingArguments(
 
     # Evaluation & checkpointing
     eval_strategy="steps",
-    eval_steps=EVAL_SAVE_STEPS,
+    eval_steps=0.1,
     save_strategy="steps",
-    save_steps=EVAL_SAVE_STEPS,
+    save_steps=0.1,
+    num_train_epochs=1.0,
     load_best_model_at_end=True,
     metric_for_best_model="f1",
     greater_is_better=True,
     save_total_limit=2,
 
     # Logging
-    logging_steps=500,
+    logging_steps=0.02,
     report_to="none",
 )
 
 def train(dataset):
     train_subset = dataset["train"].shuffle(seed=42).select(range(TRAIN_ROWS))
-    val_subset   = dataset["validation"].shuffle(seed=42).select(range(VAL_ROWS))
+    val_subset   = dataset["validation"].shuffle(seed=42).select(range(10_000))
 
     tokenized_train = train_subset.map(
         tokenize_and_align_labels,
