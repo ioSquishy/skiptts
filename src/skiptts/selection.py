@@ -10,6 +10,8 @@ from datasets import Dataset, DatasetDict
 
 buffer_size = 2 * 1024 * 1024
 
+DATASET_NAME = "s2orc-inline-citation-mask"
+
 def process_shard_jsonl(input_file_path, output_file_path:None|str=None, rows=-1):
     if output_file_path is None:
         os.makedirs("processed_shards", exist_ok=True)
@@ -42,7 +44,7 @@ def process_document(document, outfile):
     
     body = paper.get('body', {})
     full_text: str = body.get('text', "") # raw body text including headers and annotations
-    if not full_text:
+    if not full_text.strip():
         return None
 
     
@@ -70,8 +72,14 @@ def process_document(document, outfile):
     for paragraph in paragraphs:
         start_idx = paragraph.get('start', 0)
         end_idx = paragraph.get('end', 0)
-        para_texts.append(full_text[start_idx:end_idx])
+        para_text = full_text[start_idx:end_idx]
+        if not para_text.strip():
+            continue
+        para_texts.append(para_text)
         para_masks.append(full_mask[start_idx:end_idx])
+
+    if not para_texts:
+        return None
 
     datapoint = {
         "para_texts": para_texts,
@@ -118,7 +126,7 @@ def create_hf_dataset(shard_paths=[]):
         remove_columns=["para_texts", "para_masks"]
     )
 
-    final_dataset.save_to_disk("inline-citation-mask")
+    final_dataset.save_to_disk(DATASET_NAME)
 
 def process_shards_jsonl(num_processes, shard_paths=[]):
     """Processes zipped shards using n processes.

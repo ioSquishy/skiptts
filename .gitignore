@@ -15,7 +15,7 @@ wheels/
 s2orc_shards*
 processed_shards
 dataset
-inline-citation-mask
+s2orc-inline-citation-mask
 models
 checkpoints
 examples

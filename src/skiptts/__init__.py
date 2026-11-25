@@ -1,11 +1,11 @@
 # from .download_s2orc import download_all_s2orc_shards
 import os
-from .selection import create_hf_dataset
+from .selection import create_hf_dataset, DATASET_NAME
 from .training import train
 
 from datasets import DatasetDict
 
-if os.path.isdir("inline-citation-mask") == False:
+if os.path.isdir(DATASET_NAME) == False:
     create_hf_dataset([
         "s2orc_shards-2026-10-27/s2orc_v2_shard_000.gz",
         "s2orc_shards-2026-10-27/s2orc_v2_shard_047.gz",
@@ -17,7 +17,9 @@ if os.path.isdir("inline-citation-mask") == False:
         "s2orc_shards-2026-10-27/s2orc_v2_shard_329.gz",
     ])
 
-dataset = DatasetDict.load_from_disk("inline-citation-mask")
+dataset = DatasetDict.load_from_disk(DATASET_NAME)
     
 def main() -> None:
+    print("Dataset Loaded")
+    # dataset.push_to_hub("ioSquishy/s2orc-inline-citation-mask")
     train(dataset=dataset)
